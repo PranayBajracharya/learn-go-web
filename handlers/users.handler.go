@@ -19,6 +19,7 @@ func NewUserHandler(userRepo *repositories.UserRepository) *UserHandler {
 
 func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 	users := h.userRepo.List()
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
 }
@@ -38,6 +39,7 @@ func (h *UserHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
@@ -52,12 +54,14 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := models.User{
+	newUser := models.User{
 		Name:  name,
 		Email: email,
 	}
 
-	h.userRepo.Create(user)
+	newId := h.userRepo.Create(newUser)
+	user := h.userRepo.Get(newId)
+	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
@@ -89,6 +93,7 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	h.userRepo.Update(int64(id), *user)
 
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
@@ -110,6 +115,6 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	h.userRepo.Delete(int64(id))
 
+	w.WriteHeader(http.StatusNoContent)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode("User deleted")
 }
